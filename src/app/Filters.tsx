@@ -10,39 +10,66 @@ import {
 } from "@mui/material";
 import { LogEntry } from "./page";
 
+import { useEffect, useState } from "react";
+
 interface FiltersProps {
-  dateSortOrder: "asc" | "desc";
-  setDateSortOrder: (order: "asc" | "desc") => void;
+  logData: LogEntry[];  // ✅ Added back logData
+  setLogData: (data: LogEntry[]) => void;  // ✅ Added back setLogData
   selectedServer: string;
   setSelectedServer: (server: string) => void;
-  logData: LogEntry[];
-  setLogData: (data: LogEntry[]) => void;
   users: string[];
   selectedUsers: string[];
   setSelectedUsers: (selectedUsers: string[]) => void;
 }
 
 export default function Filters({
-  dateSortOrder,
-  setDateSortOrder,
+  logData, 
+  setLogData,  
   selectedServer,
   setSelectedServer,
   users,
   selectedUsers,
   setSelectedUsers,
 }: FiltersProps) {
-  const handleDateSortChange = (event: SelectChangeEvent<string>) => {
-    const order = event.target.value === "desc" ? "desc" : "asc";
-    setDateSortOrder(order);
+
+    // Maintain state for Server & Author selection to persist after refresh
+    const [serverValue, setServerValue] = useState<string>(selectedServer);
+    const [authorValue, setAuthorValue] = useState<string[]>(selectedUsers);
+  
+    useEffect(() => {
+      setServerValue(selectedServer);
+      setAuthorValue(selectedUsers);
+    }, [selectedServer, selectedUsers]);
+  
+  const handleServerChange = (event: SelectChangeEvent<string>) => {
+    const newValue = event.target.value;
+    if (newValue !== serverValue) {  // ✅ Prevent unnecessary updates
+      setServerValue(newValue);
+      setSelectedServer(newValue);
+
+      // ✅ Only update logData if a server is selected
+      if (newValue) {
+        const filteredLogs = logData.filter((entry) => entry.server === newValue);
+        setLogData(filteredLogs);
+      }
+    }
   };
 
-  const handleServerChange = (event: SelectChangeEvent<string>) => {
-    setSelectedServer(event.target.value);
-  };
 
   const handleUserChange = (event: any) => {
-    const value = event.target.value;
-    setSelectedUsers(value);
+    const newValue = event.target.value;
+    if (newValue !== authorValue) {  // ✅ Prevent unnecessary updates
+      setAuthorValue(newValue);
+      setSelectedUsers(newValue);
+
+      // ✅ Only update logData if at least one user is selected
+      if (newValue.length > 0) {
+        const filteredLogs = logData.filter((entry) =>
+          newValue.includes(entry.author)
+        );
+        setLogData(filteredLogs);
+      }
+    }
   };
 
   return (
@@ -55,53 +82,29 @@ export default function Filters({
           padding: "0 !important",
           display: "flex",
           alignItems: "center",
+          backgroundColor: "white", 
         },
       }}
     >
+      {/* Server Dropdown */}
       <FormControl className="mr-2 min-w-[120px]">
-        <InputLabel id="date-label" className="text-black" shrink>
-          Date
-        </InputLabel>
-        <Select
-          labelId="date-label"
-          value={dateSortOrder}
-          onChange={handleDateSortChange}
-          notched
-          label="Date"
-          className="text-sm p-2"
-          defaultValue="asc"
-        >
-          <MenuItem value="desc" className="text-sm">
-            Newest First
-          </MenuItem>
-          <MenuItem value="asc" className="text-sm">
-            Oldest First
-          </MenuItem>
-        </Select>
-      </FormControl>
-
-      <FormControl className="mr-2 min-w-[120px]">
-        <InputLabel id="server-label" className="text-black" shrink>
-          Server
-        </InputLabel>
-        <Select
-          labelId="server-label"
-          value={selectedServer}
+      <Select
+          value={serverValue}
           onChange={handleServerChange}
-          notched
-          label="Server"
-          className="text-sm p-2"
+          displayEmpty
+          className="text-sm p-2 bg-white"
           sx={{
+            backgroundColor: "white",
             "& .MuiSelect-select": {
               display: "flex",
-              marginLeft: "5px",
+              alignItems: "center",
             },
           }}
         >
-          <MenuItem value=" " className="text-sm">
-            Select Server
+          <MenuItem value="" disabled>
+            Server
           </MenuItem>
-          <MenuItem value="production" className="text-sm">
+          <MenuItem value="asc" className="text-sm">
             Production
           </MenuItem>
           <MenuItem value="testing" className="text-sm">
@@ -109,33 +112,31 @@ export default function Filters({
           </MenuItem>
         </Select>
       </FormControl>
-
+      {/* Author Dropdown (Multi-Select) */}
       <FormControl className="mr-2 min-w-[120px]">
-        <InputLabel id="author-label" className="text-black" shrink>
-          Filter by Users
-        </InputLabel>
-        <Select
-          labelId="author-label"
-          // Set value to selectedUsers
-          value={selectedUsers}
+      <Select
+          value={authorValue}
           onChange={handleUserChange}
           multiple
-          notched
-          label="Filter by Users"
-          className="text-sm p-2"
-          renderValue={(selected) => {
-            return selected.length === 0 ? "All Users" : selected.join(", ");
-          }}
+          displayEmpty
+          className="text-sm p-2 bg-white"
+          renderValue={(selected) =>
+            selected.length === 0 ? "Author" : selected.join(", ")
+          }
           sx={{
+            backgroundColor: "white",
             "& .MuiSelect-select": {
               display: "flex",
               marginLeft: "5px",
             },
           }}
         >
+          <MenuItem value="" disabled>
+            Author
+          </MenuItem>
           {users.map((user) => (
             <MenuItem key={user} value={user}>
-              <Checkbox checked={selectedUsers.indexOf(user) > -1} />
+              <Checkbox checked={selectedUsers.includes(user)} />
               <ListItemText primary={user} />
             </MenuItem>
           ))}

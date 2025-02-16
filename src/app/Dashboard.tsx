@@ -40,7 +40,7 @@ export default function Dashboard({
 
   if (logData.length === 0) {
     return (
-      <Typography variant="h6" className="text-gray-700 text-center">
+      <Typography variant="h6" className="text-gray-700 text-center ">
         {serverMessage}
       </Typography>
     );
@@ -70,8 +70,8 @@ export default function Dashboard({
     };
   };
   return (
-    <TableContainer>
-      <Table className="border-separate" style={{ borderSpacing: "0 15px" }}>
+    <TableContainer >
+      <Table className="border-separate  " style={{ borderSpacing: "0 15px" }}>
         <TableHead>
           <TableRow>
             <TableCell className="pb-0 text-[11px]">DATE</TableCell>
