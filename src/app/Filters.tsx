@@ -1,3 +1,4 @@
+
 import {
   FormControl,
   InputLabel,
@@ -13,8 +14,8 @@ import { LogEntry } from "./page";
 import { useEffect, useState } from "react";
 
 interface FiltersProps {
-  logData: LogEntry[];  // ✅ Added back logData
-  setLogData: (data: LogEntry[]) => void;  // ✅ Added back setLogData
+  logData: LogEntry[];  
+  setLogData: (data: LogEntry[]) => void;  
   selectedServer: string;
   setSelectedServer: (server: string) => void;
   users: string[];
@@ -43,11 +44,11 @@ export default function Filters({
   
   const handleServerChange = (event: SelectChangeEvent<string>) => {
     const newValue = event.target.value;
-    if (newValue !== serverValue) {  // ✅ Prevent unnecessary updates
+    if (newValue !== serverValue) {  // Prevent unnecessary updates
       setServerValue(newValue);
       setSelectedServer(newValue);
 
-      // ✅ Only update logData if a server is selected
+      // Only update logData if a server is selected
       if (newValue) {
         const filteredLogs = logData.filter((entry) => entry.server === newValue);
         setLogData(filteredLogs);
@@ -58,11 +59,11 @@ export default function Filters({
 
   const handleUserChange = (event: any) => {
     const newValue = event.target.value;
-    if (newValue !== authorValue) {  // ✅ Prevent unnecessary updates
+    if (newValue !== authorValue) {  // Prevent unnecessary updates
       setAuthorValue(newValue);
       setSelectedUsers(newValue);
 
-      // ✅ Only update logData if at least one user is selected
+      // Only update logData if at least one user is selected
       if (newValue.length > 0) {
         const filteredLogs = logData.filter((entry) =>
           newValue.includes(entry.author)
