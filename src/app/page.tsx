@@ -1,6 +1,6 @@
 "use client";
 import { Box, CssBaseline, Divider, Typography } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import Sidebar from "./Sidebar";
 import Dashboard from "./Dashboard";
@@ -20,7 +20,7 @@ export default function Home() {
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
   const [logData, setLogData] = useState<LogEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [selectedServer, setSelectedServer] = useState(" ");
+  const [selectedServer, setSelectedServer] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [dateSortOrder, setDateSortOrder] = useState<"asc" | "desc">("desc");
   const [loading, setLoading] = useState<boolean>(true);
@@ -30,6 +30,9 @@ export default function Home() {
 
   // Scraping function, will fetch the data from -localhost:3000//api/logdata-
   // Load from testing
+
+
+
   const fetchTestLogData = async () => {
     if (!selectedModule) return;
     try {
@@ -113,24 +116,23 @@ export default function Home() {
     }
   }, [selectedModule]);
 
+
+  // **Fix infinite loop: Only update selectedUsers if it's necessary**
   useEffect(() => {
-    if (selectedUsers.length === 0) {
-      setSelectedUsers(["all users"]);
-    } else if (
-      selectedUsers.includes("all users") &&
-      selectedUsers.length > 1
-    ) {
-      setSelectedUsers(selectedUsers.filter((user) => user !== "all users"));
+    if (selectedUsers.length === 0) return;
+    if (selectedUsers.includes("all users")) {
+      setSelectedUsers((prev) => prev.filter((user) => user !== "all users"));
     }
   }, [selectedUsers]);
 
-  const filteredLogData = logData.filter(
-    (entry) =>
-      (selectedServer === " " ||
-        entry.server.toLowerCase() === selectedServer) &&
-      (selectedUsers.includes("all users") ||
-        selectedUsers.includes(entry.author)),
-  );
+  // **Filtering Logs**
+  const filteredLogData = useMemo(() => {
+    return logData.filter(
+      (entry) =>
+        (selectedServer === "" || entry.server.toLowerCase() === selectedServer) &&
+        (selectedUsers.length === 0 || selectedUsers.includes(entry.author))
+    );
+  }, [logData, selectedServer, selectedUsers]);
 
   const sortedLogData = [...filteredLogData]
     .sort((a, b) => {
@@ -179,16 +181,15 @@ export default function Home() {
           </Typography>
 
           <Filters
-            dateSortOrder={dateSortOrder}
-            setDateSortOrder={setDateSortOrder}
-            selectedServer={selectedServer}
-            setSelectedServer={setSelectedServer}
-            logData={logData}
-            setLogData={setLogData}
-            users={users}
-            selectedUsers={selectedUsers}
-            setSelectedUsers={setSelectedUsers}
-          />
+          selectedServer={selectedServer}
+          setSelectedServer={setSelectedServer}
+          logData={logData}
+          setLogData={setLogData}
+          users={users}
+          selectedUsers={selectedUsers}
+          setSelectedUsers={setSelectedUsers}
+        />
+
         </Box>
 
         <Divider className="my-2 border-gray-300" />
